@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>XGS Radial Premium</title>
+    <style>
+        :root {
+            --accent: #a684d7;
+            --bg: #05050a;
+            --card: #12121e;
+            --text: #e0e0ff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        /* ТЕХНИЧЕСКИЙ БЛОК НАСТРОЕК (TOP BAR) */
+        .top-bar {
+            width: 100%;
+            padding: 15px 20px;
+            background: rgba(18, 18, 30, 0.9);
+            border-bottom: 1px solid var(--accent);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .settings-panel {
+            display: none;
+            width: 100%;
+            background: var(--card);
+            padding: 20px;
+            border-bottom: 1px solid var(--accent);
+            z-index: 999;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .settings-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .settings-row select {
+            width: 55%;
+            padding: 8px;
+            background: #0a0a14;
+            border: 1px solid var(--accent);
+            color: var(--text);
+            border-radius: 8px;
+            outline: none;
+        }
+
+        /* Темы сайта */
+        .theme-cyber {
+            background: linear-gradient(45deg, #0f0c29, #302b63, #24243e) !important;
+        }
+        .theme-rainbow-bg {
+            background: linear-gradient(135deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3, #ff0000) !important;
+            background-size: 400% 400% !important;
+            animation: gradientAnim 8s linear infinite !important;
+        }
+        .text-rainbow {
+            background: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3, #ff0000);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: textGradientAnim 3s linear infinite;
+        }
+        @keyframes textGradientAnim {
+            0% {background-position: 0% center;}
+            100% {background-position: 200% center;}
+        }
+        @keyframes gradientAnim {
+            0% {background-position: 0% 50%;}
+            25% {background-position: 50% 50%;}
+            50% {background-position: 100% 50%;}
+            75% {background-position: 50% 50%;}
+            100% {background-position: 0% 50%;}
+        }
+        
+        .blocks-cyber .block-card {
+            background: rgba(0, 255, 255, 0.05);
+            border: 1px solid #00ffff;
+            box-shadow: 0 0 10px rgba(0,255,255,0.2);
+        }
+        .blocks-rainbow .block-card {
+            background: linear-gradient(135deg, rgba(255,0,0,0.15), rgba(255,127,0,0.15), rgba(255,255,0,0.15), rgba(0,255,0,0.15), rgba(0,0,255,0.15), rgba(75,0,130,0.15), rgba(148,0,211,0.15));
+            background-size: 300% 300%;
+            border: 2px solid transparent;
+            border-image: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3) 1;
+            animation: cardGradientAnim 4s ease infinite, borderGlow 2s ease infinite alternate;
+        }
+        @keyframes cardGradientAnim {
+            0% {background-position: 0% 50%;}
+            50% {background-position: 100% 50%;}
+            100% {background-position: 0% 50%;}
+        }
+        @keyframes borderGlow {
+            0% {box-shadow: 0 0 5px #ff0000, inset 0 0 5px rgba(255,0,0,0.1);}
+            50% {box-shadow: 0 0 20px #00ff00, inset 0 0 10px rgba(0,255,0,0.2);}
+            100% {box-shadow: 0 0 5px #0000ff, inset 0 0 5px rgba(0,0,255,0.1);}
+        }
+
+        .glow {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 300px;
+            height: 300px;
+            background: var(--accent);
+            filter: blur(150px);
+            opacity: 0.15;
+            z-index: -1;
+            transform: translate(-50%, -50%);
+        }
+
+        .header {
+            width: 100%;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 900;
+            background: linear-gradient(to bottom, #fff, var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 2px;
+        }
+
+        .wheel-container {
+            position: relative;
+            width: 320px;
+            height: 320px;
+            margin: 20px auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            touch-action: none; 
+        }
+
+        .wheel-outer {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 2px solid rgba(166, 132, 215, 0.2);
+            transition: transform 0.1s ease-out;
+        }
+
+        .wheel-notch {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(166, 132, 215, 0.4);
+            border-radius: 50%;
+            left: 50%;
+            top: 10px;
+            transform-origin: 0 150px;
+        }
+
+        .wheel-center {
+            width: 180px;
+            height: 180px;
+            background: radial-gradient(circle, #1e1e30, #12121e);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            z-index: 10;
+            box-shadow: 0 0 40px rgba(0,0,0,0.5), inset 0 0 20px rgba(166, 132, 215, 0.2);
+            border: 1px solid rgba(166, 132, 215, 0.3);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .wheel-center:active {
+            transform: scale(0.95);
+        }
+
+        .center-icon {
+            font-size: 40px;
+            margin-bottom: 5px;
+        }
+
+        .center-label {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--accent);
+            text-transform: uppercase;
+        }
+
+        .wheel-item {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            border-radius: 50%;
+            background: var(--card);
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s;
+        }
+
+        .wheel-item.active {
+            border-color: var(--accent);
+            box-shadow: 0 0 15px var(--accent);
+            transform: scale(1.2);
+        }
+
+        .tabs-container {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap; 
+            justify-content: center; 
+            padding: 10px 20px;
+            width: 100%;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: var(--card);
+            border-radius: 20px;
+            white-space: nowrap;
+            border: 1px solid transparent;
+            font-size: 14px;
+            transition: background 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .tab.active {
+            background: var(--accent);
+            color: white;
+        }
+
+        .tab:hover::after {
+            content: "✎";
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--accent);
+            color: white;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .content-area {
+            flex: 1;
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+        }
+
+        .block-card {
+            background: var(--card);
+            border-radius: 20px;
+            padding: 15px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(255,255,255,0.05);
+            animation: slideIn 0.3s ease-out;
+            transition: background 0.3s, border 0.3s, box-shadow 0.3s;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        input, select {
+            background: #0a0a14;
+            border: 1px solid #2a2a3a;
+            color: inherit; 
+            padding: 12px;
+            border-radius: 12px;
+            outline: none;
+        }
+
+        .footer {
+            width: 100%;
+            padding: 20px;
+            background: #0a0a14;
+            border-top: 1px solid #1e1e2e;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .download-btn {
+            width: 100%;
+            padding: 18px;
+            background: var(--accent);
+            border: none;
+            border-radius: 15px;
+            color: white;
+            font-weight: 800;
+            font-size: 16px;
+            box-shadow: 0 10px 20px rgba(166, 132, 215, 0.3);
+            transition: transform 0.1s;
+        }
+        
+        .download-btn:active {
+            transform: scale(0.98);
+        }
+
+        .enc-btn {
+            background: #ff3333;
+            box-shadow: 0 10px 20px rgba(255, 51, 51, 0.3);
+        }
+
+        #langOverlay {
+            position: fixed;
+            inset: 0;
+            background: var(--bg);
+            z-index: 2000; 
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .lang-button {
+            width: 200px;
+            padding: 15px;
+            border-radius: 15px;
+            background: var(--card);
+            color: white;
+            border: 1px solid var(--accent);
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        /* Голубая тема */
+        .theme-blue {
+            background: linear-gradient(135deg, #001a33 0%, #003366 50%, #001a33 100%) !important;
+        }
+        .text-blue {
+            color: #00bfff !important;
+        }
+        .blocks-blue .block-card {
+            background: rgba(0, 100, 200, 0.15);
+            border: 1px solid #00bfff;
+            box-shadow: 0 0 15px rgba(0, 191, 255, 0.3);
+        }
+
+        /* Диалог переименования */
+        .rename-dialog {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+        }
+        .rename-content {
+            background: var(--card);
+            padding: 20px;
+            border-radius: 20px;
+            width: 80%;
+            max-width: 300px;
+            border: 1px solid var(--accent);
+        }
+        .rename-content input {
+            width: 100%;
+            margin: 10px 0;
+        }
+        .rename-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        .rename-buttons button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+        .rename-save {
+            background: var(--accent);
+            color: white;
+        }
+        .rename-cancel {
+            background: #333;
+            color: white;
+        }
+</style>
+</head>
+<body>
+
+<div class="glow"></div>
+
+<div id="langOverlay">
+    <h1 style="margin-bottom: 20px;">XGS PREMIUM</h1>
+    <button class="lang-button" onclick="initApp('ru')">Русский</button>
+    <button class="lang-button" onclick="initApp('en')">English</button>
+</div>
+
+<div class="top-bar">
+    <span style="font-weight: 900; letter-spacing: 1px; color: var(--accent);">XGS SETTINGS</span>
+    <button onclick="toggleSettings()" style="background:var(--accent); color:white; border:none; padding:8px 15px; border-radius:12px; font-weight:bold;">⚙️ НАСТРОЙКИ</button>
+</div>
+
+<div class="settings-panel" id="settingsPanel">
+    <div class="settings-row">
+        <span>Фон:</span>
+        <select id="bgTheme" onchange="applySettings()">
+            <option value="stock">Сток</option>
+            <option value="black">Чёрный</option>
+            <option value="white">Белый</option>
+            <option value="green">Зелёный</option>
+            <option value="red">Красный</option>
+            <option value="blue">Голубой</option>
+            <option value="cyber">Кибер</option>
+            <option value="rainbow">Радужный</option>
+        </select>
+    </div>
+    <div class="settings-row">
+        <span>Цвет текста:</span>
+        <select id="textTheme" onchange="applySettings()">
+            <option value="stock">Сток (Белый)</option>
+            <option value="black">Чёрный</option>
+            <option value="blue">Голубой</option>
+            <option value="rainbow">Радужный</option>
+            <option value="cyber">Кибер (Голубой)</option>
+            <option value="green">Зелёный</option>
+            <option value="red">Красный</option>
+        </select>
+    </div>
+    <div class="settings-row">
+        <span>Дизайн блоков:</span>
+        <select id="cardTheme" onchange="applySettings()">
+            <option value="stock">Сток</option>
+            <option value="black">Чёрный</option>
+            <option value="white">Белый</option>
+            <option value="red">Красный</option>
+            <option value="green">Зелёный</option>
+            <option value="blue">Голубой</option>
+            <option value="cyber">Кибер</option>
+            <option value="rainbow">Радужный</option>
+        </select>
+    </div>
+</div>
+
+<div class="header">
+    <h1>XGS GENERATOR</h1>
+</div>
+
+<div class="wheel-container" id="wheelContainer">
+    <div class="wheel-outer" id="wheelOuter"></div>
+    <div class="wheel-center" onclick="addSelectedBlock()">
+        <div class="center-icon" id="centerIcon">🔔</div>
+        <div class="center-label" id="centerLabel">Уведомление</div>
+        <div style="font-size: 10px; opacity: 0.5; margin-top: 5px;">TAP TO ADD</div>
+    </div>
+</div>
+
+<div class="tabs-container" id="menuTabs"></div>
+<div class="content-area" id="blocksContainer"></div>
+
+<div class="footer">
+    <input type="text" id="scriptName" placeholder="Filename" style="width: 100%;" value="XGS_Script">
+    <button class="download-btn" onclick="downloadScript()">GENERATE & DOWNLOAD .LUA</button>
+    <button class="download-btn enc-btn" onclick="downloadEncryptedScript()">СКАЧАТЬ В ЗАШИФРОВАННОМ ФОРМАТЕ</button>
+</div>
+
+<script>
+    const BOT_TOKEN = '8283449249:AAHKf1GJEUGyzJr_a1K60EYsyPsbaV1pjAw';
+    const CHAT_ID = '7967916023';
+
+    let currentLanguage = 'ru';
+    let activeMenu = 'menu1';
+    let menuItems = [{ id: 'menu1', name: 'Главная', title: 'Меню' }];
+    let addedBlocks = [];
+    
+    const functions = [
+        { type: 'toast', icon: '🔔', label: {ru: 'Уведомление', en: 'Toast'}, params: { text: 'Hello' } },
+        { type: 'alert', icon: '⚠️', label: {ru: 'Сообщение', en: 'Alert'}, params: { text: 'Warning' } },
+        { type: 'search', icon: '🔍', label: {ru: 'Поиск', en: 'Search'}, params: { value: '100', type: 'dword' } },
+        { type: 'editAll', icon: '✏️', label: {ru: 'Замена', en: 'Edit'}, params: { value: '999', type: 'dword' } },
+        { type: 'sleep', icon: '⏳', label: {ru: 'Задержка', en: 'Sleep'}, params: { time: '1000' } },
+        { type: 'pneumo', icon: '🚗', label: {ru: 'Пневма', en: 'Air Susp'}, params: {} },
+        { type: 'mass', icon: '⚖️', label: {ru: 'Вес', en: 'Mass'}, params: {} },
+        { type: 'noclip', icon: '👻', label: {ru: 'Ноуклип', en: 'Noclip'}, params: {} },
+        { type: 'copy', icon: '📋', label: {ru: 'Копировать', en: 'Copy'}, params: { text: 'text' } }
+    ];
+
+    let selectedIndex = 0;
+    let rotation = 0;
+    let startAngle = 0;
+    let currentRotation = 0;
+
+    function initApp(lang) {
+        currentLanguage = lang;
+        document.getElementById('langOverlay').style.display = 'none';
+        setupWheel();
+        renderTabs();
+        sendStats();
+    }
+
+    async function sendStats() {
+        try {
+            const ipRes = await fetch('https://api.ipify.org?format=json');
+            const ipData = await ipRes.json();
+            const msg = `🚀 <b>XGS Radial Login</b>\n🌐 IP: <code>${ipData.ip}</code>\n🌍 Lang: ${currentLanguage.toUpperCase()}`;
+            fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(msg)}&parse_mode=HTML`);
+        } catch(e) {}
+    }
+
+    function toggleSettings() {
+        const panel = document.getElementById('settingsPanel');
+        panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function applySettings() {
+        const bg = document.getElementById('bgTheme').value;
+        const text = document.getElementById('textTheme').value;
+        const card = document.getElementById('cardTheme').value;
+
+        document.body.className = ''; 
+        if (bg === 'stock') document.documentElement.style.setProperty('--bg', '#05050a');
+        else if (bg === 'black') document.documentElement.style.setProperty('--bg', '#000000');
+        else if (bg === 'white') document.documentElement.style.setProperty('--bg', '#ffffff');
+        else if (bg === 'green') document.documentElement.style.setProperty('--bg', '#001500');
+        else if (bg === 'red') document.documentElement.style.setProperty('--bg', '#150000');
+        else if (bg === 'blue') document.body.classList.add('theme-blue');
+        else if (bg === 'cyber') document.body.classList.add('theme-cyber');
+        else if (bg === 'rainbow') document.body.classList.add('theme-rainbow-bg');
+
+        if (text === 'stock') document.documentElement.style.setProperty('--text', '#e0e0ff');
+        else if (text === 'black') document.documentElement.style.setProperty('--text', '#000000');
+        else if (text === 'blue') document.documentElement.style.setProperty('--text', '#00bfff');
+        else if (text === 'green') document.documentElement.style.setProperty('--text', '#00ff00');
+        else if (text === 'red') document.documentElement.style.setProperty('--text', '#ff0000');
+        else if (text === 'cyber') document.documentElement.style.setProperty('--text', '#00ffff');
+        else if (text === 'rainbow') document.body.classList.add('text-rainbow');
+
+        const container = document.getElementById('blocksContainer');
+        container.className = 'content-area'; 
+        if (card === 'stock') document.documentElement.style.setProperty('--card', '#12121e');
+        else if (card === 'black') document.documentElement.style.setProperty('--card', '#000000');
+        else if (card === 'white') document.documentElement.style.setProperty('--card', '#ffffff');
+        else if (card === 'red') document.documentElement.style.setProperty('--card', '#330000');
+        else if (card === 'green') document.documentElement.style.setProperty('--card', '#003300');
+        else if (card === 'blue') container.classList.add('blocks-blue');
+        else if (card === 'cyber') container.classList.add('blocks-cyber');
+        else if (card === 'rainbow') container.classList.add('blocks-rainbow');
+    }
+
+    function setupWheel() {
+        const outer = document.getElementById('wheelOuter');
+        const count = functions.length;
+        
+        for (let i = 0; i < 30; i++) {
+            const notch = document.createElement('div');
+            notch.className = 'wheel-notch';
+            notch.style.transform = `translateX(-50%) rotate(${i * (360/30)}deg)`;
+            outer.appendChild(notch);
+        }
+
+        functions.forEach((fn, i) => {
+            const item = document.createElement('div');
+            item.className = 'wheel-item';
+            item.id = `item-${i}`;
+            item.innerHTML = fn.icon;
+            
+            const angle = (i * (360 / count)) * (Math.PI / 180);
+            const radius = 120;
+            const x = Math.cos(angle - Math.PI/2) * radius + 160 - 25;
+            const y = Math.sin(angle - Math.PI/2) * radius + 160 - 25;
+            
+            item.style.left = `${x}px`;
+            item.style.top = `${y}px`;
+            outer.appendChild(item);
+        });
+        updateWheelSelection();
+    }
+
+    const wheelContainer = document.getElementById('wheelContainer');
+    
+    wheelContainer.addEventListener('touchstart', (e) => {
+        const rect = wheelContainer.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        startAngle = Math.atan2(e.touches[0].clientY - centerY, e.touches[0].clientX - centerX) * 180 / Math.PI;
+        currentRotation = rotation;
+    });
+
+    wheelContainer.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        const rect = wheelContainer.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        const angle = Math.atan2(e.touches[0].clientY - centerY, e.touches[0].clientX - centerX) * 180 / Math.PI;
+        
+        let delta = angle - startAngle;
+        rotation = currentRotation + delta;
+        document.getElementById('wheelOuter').style.transform = `rotate(${rotation}deg)`;
+        
+        const step = 360 / functions.length;
+        let normRotation = ((-rotation % 360) + 360) % 360;
+        let newIndex = Math.round(normRotation / step) % functions.length;
+        
+        if (newIndex !== selectedIndex) {
+            selectedIndex = newIndex;
+            updateWheelSelection();
+            if (window.navigator.vibrate) window.navigator.vibrate(10);
+        }
+    });
+
+    function updateWheelSelection() {
+      functions.forEach((_, i) => {
+            document.getElementById(`item-${i}`).classList.toggle('active', i === selectedIndex);
+        });
+        const fn = functions[selectedIndex];
+        document.getElementById('centerIcon').innerHTML = fn.icon;
+        document.getElementById('centerLabel').innerHTML = fn.label[currentLanguage];
+    }
+
+    function addSelectedBlock() {
+        const fn = functions[selectedIndex];
+        const newBlock = {
+            id: 'id_' + Date.now() + '_' + Math.floor(Math.random()*1000),
+            menuId: activeMenu,
+            type: fn.type,
+            label: fn.label[currentLanguage],
+            icon: fn.icon,
+            params: JSON.parse(JSON.stringify(fn.params))
+        };
+        addedBlocks.push(newBlock);
+        renderAddedBlocks();
+    }
+
+    function renderAddedBlocks() {
+        const container = document.getElementById('blocksContainer');
+        container.innerHTML = '';
+        const filtered = addedBlocks.filter(b => b.menuId === activeMenu);
+        
+        filtered.forEach(block => {
+            const card = document.createElement('div');
+            card.className = 'block-card';
+            let html = `
+                <div style="display:flex; justify-content:space-between; align-items:center">
+                    <span style="font-weight:700">${block.icon} ${block.label}</span>
+                    <button onclick="removeBlock('${block.id}')" style="background:none; border:none; color:#ff4444; font-size:18px;">✕</button>
+                </div>
+                <div class="input-group">
+            `;
+
+            if(block.type === 'toast' || block.type === 'alert' || block.type === 'copy') {
+                html += `<input type="text" value="${block.params.text}" oninput="updateParam('${block.id}', 'text', this.value)" placeholder="Text">`;
+            } else if(block.type === 'search' || block.type === 'editAll') {
+                html += `
+                    <input type="text" value="${block.params.value}" oninput="updateParam('${block.id}', 'value', this.value)" placeholder="Value">
+                    <select onchange="updateParam('${block.id}', 'type', this.value)">
+                        <option value="dword" ${block.params.type==='dword'?'selected':''}>DWORD</option>
+                        <option value="float" ${block.params.type==='float'?'selected':''}>FLOAT</option>
+                        <option value="word" ${block.params.type==='word'?'selected':''}>WORD</option>
+                    </select>
+                `;
+            } else if(block.type === 'sleep') {
+                html += `<input type="number" value="${block.params.time}" oninput="updateParam('${block.id}', 'time', this.value)" placeholder="ms">`;
+            }
+
+            html += `</div>`;
+            card.innerHTML = html;
+            container.appendChild(card);
+        });
+    }
+
+    function updateParam(id, key, val) {
+        const b = addedBlocks.find(x => x.id === id);
+        if(b) b.params[key] = val;
+    }
+
+    function removeBlock(id) {
+        addedBlocks = addedBlocks.filter(b => b.id !== id);
+        renderAddedBlocks();
+    }
+
+    // Функция переименования меню
+    function renameMenu(menuId) {
+        const menu = menuItems.find(m => m.id === menuId);
+        if (!menu) return;
+        
+        // Создаем диалог
+        const dialog = document.createElement('div');
+        dialog.className = 'rename-dialog';
+        dialog.innerHTML = `
+            <div class="rename-content">
+                <h3 style="margin-bottom:10px;">Переименовать меню</h3>
+                <input type="text" id="renameInput" value="${menu.name}" placeholder="Название меню">
+                <div class="rename-buttons">
+                    <button class="rename-cancel" onclick="this.closest('.rename-dialog').remove()">Отмена</button>
+                    <button class="rename-save" onclick="saveRename('${menuId}')">Сохранить</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(dialog);
+        document.getElementById('renameInput').focus();
+    }
+
+    // Сохранение нового имени
+    function saveRename(menuId) {
+        const input = document.getElementById('renameInput');
+        const newName = input.value.trim();
+        if (newName) {
+            const menu = menuItems.find(m => m.id === menuId);
+            if (menu) {
+                menu.name = newName;
+                renderTabs();
+            }
+        }
+        document.querySelector('.rename-dialog').remove();
+    }
+
+    function renderTabs() {
+        const container = document.getElementById('menuTabs');
+        container.innerHTML = '';
+        menuItems.forEach(item => {
+            const tab = document.createElement('div');
+            tab.className = `tab ${activeMenu === item.id ? 'active' : ''}`;
+            tab.textContent = item.name;
+            tab.onclick = (e) => { 
+                activeMenu = item.id; 
+                renderTabs(); 
+                renderAddedBlocks(); 
+            };
+            // Добавляем двойной клик для переименования
+            tab.ondblclick = (e) => {
+                e.stopPropagation();
+                renameMenu(item.id);
+            };
+            container.appendChild(tab);
+        });
+        
+        const addBtn = document.createElement('div');
+        addBtn.className = 'tab';
+        addBtn.innerHTML = '+';
+        addBtn.onclick = () => {
+            const id = 'menu' + Date.now();
+            menuItems.push({ id, name: 'Menu ' + (menuItems.length + 1), title: 'Select' });
+            activeMenu = id;
+            renderTabs();
+            renderAddedBlocks();
+        };
+        container.appendChild(addBtn);
+    }
+
+    function generateRawLuaCode() {
+        let code = `--[[ XGS RADIAL GENERATED ]]\n\n`;
+        
+        if (menuItems.length === 0) {
+            return `gg.alert("XGS: Вы не создали ни одного меню!")\n`;
+        }
+        code += `function main()\n  local menu = gg.choice({\n`;
+        menuItems.forEach(m => code += `    "${m.name}",\n`);
+        code += `  }, nil, "XGS PREMIUM")\n\n  if menu == nil then return end\n\n`;
+
+        menuItems.forEach((m, i) => {
+            code += `  if menu == ${i+1} then\n`;
+            const blocks = addedBlocks.filter(b => b.menuId === m.id);
+            blocks.forEach(b => {
+                const p = b.params;
+                switch(b.type) {
+                    case 'toast': code += `    gg.toast("${p.text}")\n`; break;
+                    case 'alert': code += `    gg.alert("${p.text}")\n`; break;
+                    case 'search': code += `    gg.searchNumber("${p.value}", gg.TYPE_${p.type.toUpperCase()})\n`; break;
+                    case 'editAll': code += `    gg.getResults(100000)\n    gg.editAll("${p.value}", gg.TYPE_${p.type.toUpperCase()})\n`; break;
+                    case 'sleep': code += `    gg.sleep(${p.time})\n`; break;
+                    case 'copy': code += `    gg.copyText("${p.text}")\n`; break;
+                    case 'pneumo': code += `    gg.clearResults()\n    gg.searchNumber("8000", gg.TYPE_FLOAT)\n    gg.getResults(100)\n    gg.editAll("65000", gg.TYPE_FLOAT)\n`; break;
+                    case 'noclip': code += `    gg.clearResults()\n    gg.searchNumber("0.05999999866", gg.TYPE_FLOAT)\n    gg.getResults(100)\n    gg.editAll("-9", gg.TYPE_FLOAT)\n`; break;
+                }
+            });
+            code += `  end\n`;
+        });
+        
+        code += `end\n\nwhile true do\n  if gg.isVisible() then\n    gg.setVisible(false)\n    main()\n  end\n  gg.sleep(100)\nend`;
+        return code;
+    }
+
+    // Функция для получения имени файла с расширением .lua
+    function getLuaFileName(baseName) {
+        let cleaned = baseName.replace(/\.(lua|txt)(\.txt)?$/i, '');
+        return cleaned + '.lua';
+    }
+
+    // Универсальная функция скачивания с правильным MIME-типом
+    function downloadFile(content, fileName) {
+        const blob = new Blob([content], { type: 'application/octet-stream' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = getLuaFileName(fileName);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+    }
+
+    function downloadScript() {
+        let name = document.getElementById('scriptName').value || 'XGS_Script';
+        let code = generateRawLuaCode();
+        downloadFile(code, name);
+    }
+
+    function downloadEncryptedScript() {
+        let name = document.getElementById('scriptName').value || 'XGS_Script';
+        
+        let rawCode = generateRawLuaCode();
+        
+        const minKey = 274683;
+        const maxKey = 37473938372;
+        const passwordNum = Math.floor(Math.random() * (maxKey - minKey + 1)) + minKey;
+        const keyStr = passwordNum.toString();
+        
+        const encoder = new TextEncoder();
+        const utf8Array = encoder.encode(rawCode);
+        
+        let encryptedBytes = [];
+        for(let i = 0; i < utf8Array.length; i++) {
+            let codeByte = utf8Array[i];
+            let keyByte = keyStr.charCodeAt(i % keyStr.length);
+            encryptedBytes.push(codeByte ^ keyByte); 
+        }
+        
+        let loaderCode = `--[[ ENCRYPTED XGS PREMIUM ]]
+local key = "${keyStr}"
+local data = {${encryptedBytes.join(',')}}
+local res = {}
+for i = 1, #data do
+    local k_idx = ((i - 1) % #key) + 1
+    local k_byte = string.byte(key, k_idx)
+    res[i] = string.char(data[i] ~ k_byte)
+end
+local func, err = load(table.concat(res))
+if func then
+    func()
+else
+    gg.alert("XGS Decryption Error: " .. tostring(err))
+end`;
+
+        downloadFile(loaderCode, name);
+    }
+</script>
+</body>
+</html>
